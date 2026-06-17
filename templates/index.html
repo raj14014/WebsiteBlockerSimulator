@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Website Blocker Simulator</title>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+
+    {% if messages %}
+
+        {% for category, message in messages %}
+
+            <div class="alert alert-{{ category }} alert-dismissible fade show">
+
+                {{ message }}
+
+                <button
+                    class="btn-close"
+                    data-bs-dismiss="alert">
+                </button>
+
+            </div>
+
+        {% endfor %}
+
+    {% endif %}
+
+{% endwith %}
+
+    <!-- Bootstrap -->
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+          rel="stylesheet">
+
+    <!-- Bootstrap Icons -->
+
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+
+    <!-- Custom CSS -->
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+</head>
+
+<body>
+
+<div class="container mt-5">
+
+    <!-- Heading -->
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+    <div class="text-center flex-grow-1">
+
+        <h1 class="display-5 text-primary">
+
+            <i class="bi bi-shield-lock-fill"></i>
+
+            Website Blocker Simulator
+
+        </h1>
+
+        <p class="text-muted">
+
+            Flask + SQLite Project
+
+        </p>
+
+    </div>
+
+    <div>
+
+        <div class="d-flex gap-2">
+
+    <a href="/profile" class="btn btn-primary">
+
+      👤 Profile
+
+    </a>
+
+    <a href="/change_password"
+       class="btn btn-warning">
+
+        🔑 Change Password
+
+    </a>
+
+    <a href="/logout"
+       class="btn btn-danger">
+
+        Logout
+
+    </a>
+
+</div>
+
+    </div>
+
+</div>
+
+    <!-- Statistics -->
+
+    <div class="row mb-4">
+
+        <div class="col-md-4">
+
+            <div class="card shadow text-center">
+
+                <div class="card-body">
+
+                    <h5>Total Websites</h5>
+
+                    <h2 class="text-primary">
+
+                        {{ total_websites }}
+
+                    </h2>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="col-md-4">
+
+            <div class="card shadow text-center">
+
+                <div class="card-body">
+
+                    <h5>Blocked Checks</h5>
+
+                    <h2 class="text-danger">
+
+                        {{ blocked_checks|default(0) }}
+
+                    </h2>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="col-md-4">
+
+            <div class="card shadow text-center">
+
+                <div class="card-body">
+
+                    <h5>Allowed Checks</h5>
+
+                    <h2 class="text-success">
+
+                        {{ allowed_checks|default(0) }}
+
+                    </h2>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Add Website -->
+
+    <div class="card shadow mb-4">
+
+        <div class="card-body">
+
+            <h4>
+
+                <i class="bi bi-plus-circle"></i>
+
+                Add Website
+
+            </h4>
+
+            <form action="/add" method="POST">
+
+                <div class="input-group">
+
+                    <input
+                        type="text"
+                        name="website"
+                        class="form-control"
+                        placeholder="facebook.com"
+                        required>
+
+                    <button
+                        class="btn btn-primary">
+
+                        Add
+
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+    <!-- Search -->
+
+    <div class="card shadow mb-4">
+
+        <div class="card-body">
+
+            <h4>
+
+                <i class="bi bi-search"></i>
+
+                Search Website
+
+            </h4>
+
+            <form action="/search" method="POST">
+
+                <div class="input-group">
+
+                    <input
+                        type="text"
+                        name="keyword"
+                        class="form-control"
+                        placeholder="Search website">
+
+                    <button
+                        class="btn btn-dark">
+
+                        Search
+
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+        <!-- ================= Check Website ================= -->
+
+    <div class="card shadow mb-4">
+
+        <div class="card-body">
+
+            <h4>
+
+                <i class="bi bi-shield-check"></i>
+
+                Check Website
+
+            </h4>
+
+            <form action="/check" method="POST">
+
+                <div class="input-group">
+
+                    <input
+                        type="text"
+                        name="website"
+                        class="form-control"
+                        placeholder="Enter website to check"
+                        required>
+
+                    <button
+                        class="btn btn-success">
+
+                        Check
+
+                    </button>
+
+                </div>
+
+            </form>
+
+            {% if message %}
+
+            <div class="alert alert-{{ color }} mt-3">
+
+                {{ message }}
+
+            </div>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+    <!-- ================= Charts ================= -->
+
+<div class="row mb-4">
+
+    <div class="col-md-6">
+
+        <div class="card shadow">
+
+            <div class="card-body">
+
+                <h5 class="text-center">
+
+                    Blocked vs Allowed
+
+                </h5>
+
+                <canvas id="pieChart"></canvas>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="col-md-6">
+
+        <div class="card shadow">
+
+            <div class="card-body">
+
+                <h5 class="text-center">
+
+                    Dashboard Statistics
+
+                </h5>
+
+                <canvas id="barChart"></canvas>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+    <!-- ================= Blocked Websites ================= -->
+
+    <div class="card shadow mb-4">
+
+        <div class="card-body">
+
+            <div class="d-flex justify-content-between align-items-center mb-3">
+
+                <h4 class="mb-0">
+
+                  <i class="bi bi-list-ul"></i>
+
+                     Blocked Websites
+
+                 </h4>
+
+                <a href="/export" class="btn btn-success">
+
+                     <i class="bi bi-download"></i>
+
+                    Export CSV
+
+                 </a>
+
+            </div>
+
+            <table class="table table-striped table-hover">
+
+                <thead class="table-dark">
+
+                    <tr>
+
+                        <th>ID</th>
+
+                        <th>Website</th>
+
+                        <th width="180">
+
+                            Action
+
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                {% if websites %}
+
+                    {% for website in websites %}
+
+                    <tr>
+
+                        <td>{{ website["id"] }}</td>
+
+                        <td>{{ website["website"] }}</td>
+
+                        <td>
+
+                            <a
+                                href="/edit/{{ website['id'] }}"
+                                class="btn btn-warning btn-sm">
+
+                                <i class="bi bi-pencil-square"></i>
+
+                                Edit
+
+                            </a>
+
+                            <a
+                                href="/delete/{{ website['id'] }}"
+                                class="btn btn-danger btn-sm"
+                                onclick="return confirm('Delete this website?')">
+
+                                <i class="bi bi-trash"></i>
+
+                                Delete
+
+                            </a>
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                {% else %}
+
+                    <tr>
+
+                        <td colspan="3" class="text-center text-muted">
+
+                            No websites found.
+
+                        </td>
+
+                    </tr>
+
+                {% endif %}
+
+                </tbody>
+
+            </table>
+
+            <nav class="mt-4">
+
+              <ul class="pagination justify-content-center">
+
+                  {% if page > 1 %}
+
+                    <li class="page-item">
+
+                        <a class="page-link"
+                           href="/?page={{ page-1 }}">
+
+                            Previous
+
+                        </a>
+
+                    </li>
+
+                     {% endif %}
+
+                     {% for p in range(1, total_pages+1) %}
+
+                    <li class="page-item {% if p==page %}active{% endif %}">
+
+                        <a class="page-link"
+                             href="/?page={{ p }}">
+
+                            {{ p }}
+
+                        </a>
+   
+                    </li>
+
+                     {% endfor %}
+
+                     {% if page < total_pages %}
+
+                    <li class="page-item">
+
+                        <a class="page-link"
+                            href="/?page={{ page+1 }}">
+
+                             Next
+
+                        </a>
+
+                    </li>
+
+                     {% endif %}
+
+                </ul>
+
+            </nav>
+
+        </div>
+
+    </div>
+
+
+    <!-- ================= History ================= -->
+
+    <div class="card shadow">
+
+        <div class="card-body">
+
+            <h4>
+
+                <i class="bi bi-clock-history"></i>
+
+                Website Check History
+
+            </h4>
+
+            <table class="table table-bordered table-hover">
+
+                <thead class="table-primary">
+
+                    <tr>
+
+                        <th>ID</th>
+
+                        <th>Website</th>
+
+                        <th>Status</th>
+
+                        <th>Checked At</th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                {% if history %}
+
+                    {% for item in history %}
+
+                    <tr>
+
+                        <td>{{ item["id"] }}</td>
+
+                        <td>{{ item["website"] }}</td>
+
+                        <td>
+
+                            {% if item["status"] == "Blocked" %}
+
+                                <span class="badge bg-danger">
+
+                                    Blocked
+
+                                </span>
+
+                            {% else %}
+
+                                <span class="badge bg-success">
+
+                                    Allowed
+
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+                        <td>{{ item["checked_at"] }}</td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                {% else %}
+
+                    <tr>
+
+                        <td colspan="4" class="text-center text-muted">
+
+                            No history available.
+
+                        </td>
+
+                    </tr>
+
+                {% endif %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+    <br>
+
+        <!-- ================= Footer ================= -->
+
+    <footer class="text-center mt-5 mb-3">
+
+        <hr>
+
+        <p class="text-muted">
+
+            Website Blocker Simulator © 2026
+
+        </p>
+
+        <button
+            class="btn btn-dark"
+            onclick="toggleDarkMode()">
+
+            🌙 Toggle Dark Mode
+
+        </button>
+
+        <p class="mt-3">
+
+            Current Time:
+
+            <span id="clock"></span>
+
+        </p>
+
+    </footer>
+
+</div>
+
+
+<!-- Bootstrap JS -->
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Chart.js -->
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+
+function toggleDarkMode(){
+
+    document.body.classList.toggle("dark-mode");
+
+}
+
+
+// Live Clock
+
+function updateClock(){
+
+    const now = new Date();
+
+    document.getElementById("clock").innerHTML =
+        now.toLocaleString();
+
+}
+
+setInterval(updateClock,1000);
+
+updateClock();
+
+
+// Pie Chart
+
+const pieChart = document.getElementById("pieChart");
+
+if(pieChart){
+
+new Chart(pieChart,{
+
+type:"pie",
+
+data:{
+
+labels:["Blocked","Allowed"],
+
+datasets:[{
+
+data:[
+
+{{ blocked_checks|default(0) }},
+
+{{ allowed_checks|default(0) }}
+
+]
+
+}]
+
+}
+
+});
+
+}
+
+
+// Bar Chart
+
+const barChart = document.getElementById("barChart");
+
+if(barChart){
+
+new Chart(barChart,{
+
+type:"bar",
+
+data:{
+
+labels:[
+
+"Blocked Websites",
+
+"Total Checks"
+
+],
+
+datasets:[{
+
+label:"Statistics",
+
+data:[
+
+{{ total_websites|default(0) }},
+
+{{ total_checks|default(0) }}
+
+]
+
+}]
+
+},
+
+options:{
+
+responsive:true,
+
+scales:{
+
+y:{
+
+beginAtZero:true
+
+}
+
+}
+
+}
+
+});
+
+}
+
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+
+</html>

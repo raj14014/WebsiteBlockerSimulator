@@ -1,0 +1,111 @@
+/* ==========================
+   Website Blocker Simulator
+========================== */
+
+body{
+    background:#f4f7fb;
+    font-family:Arial, Helvetica, sans-serif;
+}
+
+/* Title */
+
+h1{
+    font-weight:bold;
+}
+
+/* Dashboard Cards */
+
+.dashboard-card{
+    border:none;
+    border-radius:18px;
+    transition:.3s;
+}
+
+.dashboard-card:hover{
+    transform:translateY(-8px);
+    box-shadow:0px 12px 25px rgba(0,0,0,.25);
+}
+
+/* Normal Cards */
+
+.card{
+    border:none;
+    border-radius:18px;
+}
+
+/* Buttons */
+
+.btn{
+    border-radius:10px;
+}
+
+/* Tables */
+
+table{
+    margin-top:10px;
+}
+
+thead{
+    font-weight:bold;
+}
+
+/* Badges */
+
+.badge{
+    font-size:14px;
+    padding:8px 14px;
+}
+
+/* Inputs */
+
+.form-control{
+    border-radius:10px;
+}
+
+/* Hover */
+
+tr:hover{
+    background:#eef5ff;
+}
+
+/* Footer */
+
+.footer{
+    text-align:center;
+    color:gray;
+    margin-top:30px;
+}
+
+/* Dark Mode */
+
+.dark-mode{
+
+    background:#121212;
+    color:white;
+
+}
+
+.dark-mode .card{
+
+    background:#1d1d1d;
+    color:white;
+
+}
+
+.dark-mode table{
+
+    color:white;
+
+}
+
+.dark-mode .table-dark{
+
+    color:white;
+
+}
+
+.dark-mode tr:hover{
+
+    background:#2a2a2a;
+
+}
